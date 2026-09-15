@@ -4,8 +4,8 @@ Plugin independiente para [SignalRGB](https://signalrgb.com/) del **Redragon K55
 
 El plugin se comunica directamente con el controlador EVision del K552 RGB:
 
-- VID: `0x0C45`
-- PID: `0x5104`
+- VID: `0x320F`
+- PID: `0x5000`
 - HID usage page: `0xFF1C`
 - Buffer RGB: 126 posiciones, enviado en 7 paquetes de 54 bytes
 
@@ -26,4 +26,4 @@ Este plugin está preparado para el K552 RGB basado en EVision. Las variantes K5
 ## Créditos
 
 - Mapa físico ANSI TKL de 87 teclas.
-- Protocolo de color EVision estándar para el K552 (`0x0C45:0x5104`).
+- Protocolo de color EVision estándar para el K552 (`0x320F:0x5000`).

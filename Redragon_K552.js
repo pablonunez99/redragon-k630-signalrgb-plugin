@@ -1,11 +1,14 @@
 export function Name() { return "Redragon K552 RGB Custom"; }
-export function VendorId() { return 0x0C45; }
-export function ProductId() { return 0x5104; }
+export function VendorId() { return 0x320F; }
+export function ProductId() { return 0x5000; }
 export function Publisher() { return "Mostakim"; }
 export function Size() { return [20, 6]; }
 export function DeviceType() { return "keyboard"; }
 export function Validate(endpoint) {
-    return endpoint.interface === 1 && endpoint.usage_page === 0xFF1C;
+    return endpoint.interface === 1 &&
+        endpoint.usage === 0x0092 &&
+        endpoint.usage_page === 0xFF1C &&
+        endpoint.collection === 0x0004;
 }
 export function ImageUrl() { return ""; }
 
