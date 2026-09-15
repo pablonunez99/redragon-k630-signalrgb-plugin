@@ -10,6 +10,7 @@ El plugin se comunica directamente con el controlador EVision del K552 RGB:
 - Buffer RGB: 126 posiciones, enviado en 6 rangos ocupados por fila
 - Render limitado a 20 FPS, con 1 ms entre paquetes
 - No reenvía frames idénticos, especialmente importante para colores sólidos
+- Incluye protocolo K552 V2 y protocolo legado compatible con el plugin K630
 
 Incluye un mapa ISO español TKL de 88 teclas, incluyendo `Ñ` y `<>`, y activa el modo personalizado para que SignalRGB pueda controlar el color de cada tecla.
 
@@ -20,6 +21,7 @@ Incluye un mapa ISO español TKL de 88 teclas, incluyendo `Ñ` y `<>`, y activa 
 2. Cierra SignalRGB completamente, también desde la bandeja del sistema.
 3. Vuelve a abrir SignalRGB y entra en Devices.
 4. Busca **Redragon K552 RGB Custom**.
+5. En Settings, prueba `RGB Protocol: K630 compatible (0x12)`. Es el protocolo del plugin anterior que funcionaba de forma estable en tu teclado.
 
 Importante: elimina cualquier copia antigua de `Redragon_K630.js` o `Redragon_K640.js` de esa carpeta. Solo debe quedar activo este plugin, porque ambos perfiles pueden intentar controlar el mismo dispositivo `0x320F:0x5000`.
 

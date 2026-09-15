@@ -15,6 +15,7 @@ export function ImageUrl() { return ""; }
 
 /* global
 lightingMode:readonly
+protocolMode:readonly
 */
 
 export function ControllableParameters() {
@@ -26,6 +27,14 @@ export function ControllableParameters() {
             type: "combobox",
             values: ["Canvas", "Off"],
             default: "Canvas"
+        },
+        {
+            property: "protocolMode",
+            group: "lighting",
+            label: "RGB Protocol",
+            type: "combobox",
+            values: ["K552 V2 (0x11)", "K630 compatible (0x12)"],
+            default: "K630 compatible (0x12)"
         }
     ];
 }
@@ -64,6 +73,7 @@ const vLedPositions = [
 ];
 
 let lastSentFrame = null;
+let lastProtocolMode = null;
 
 export function Initialize() {
     device.setName(Name());
@@ -81,6 +91,13 @@ export function Shutdown(SystemSuspending) {
 }
 
 function setSoftwareMode() {
+    if (protocolMode === "K630 compatible (0x12)") {
+        // This is the initialization packet used by the older K630 plugin.
+        device.write([0x04, 0x8C, 0x00, 0x0B, 0x30, 0x50, 0x01], 64);
+        device.pause(5);
+        return;
+    }
+
     // EVision custom mode (0x14), brightness 4, normal speed 3.
     sendMode([0x14, 0x04, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00]);
 }
@@ -109,6 +126,12 @@ function sendColors(overrideColor) {
     // sent; unused matrix gaps are not transmitted.
     const RGBData = new Array(126 * 3).fill(0);
     const fixedColor = overrideColor ? hexToRgb(overrideColor) : null;
+
+    if (lastProtocolMode !== protocolMode) {
+        lastProtocolMode = protocolMode;
+        lastSentFrame = null;
+        setSoftwareMode();
+    }
 
     for (let i = 0; i < vLeds.length; i++) {
         const x = vLedPositions[i][0];
@@ -153,6 +176,11 @@ function applyChecksum(packet) {
 }
 
 function writeRGBPackages(RGBData) {
+    if (protocolMode === "K630 compatible (0x12)") {
+        writeLegacyRGBPackages(RGBData);
+        return;
+    }
+
     // Each range is one occupied keyboard row. The largest range is 17 RGB
     // slots (51 bytes), so every range fits in one EVision HID packet.
     const ranges = [
@@ -174,6 +202,51 @@ function writeRGBPackages(RGBData) {
         }
 
         applyChecksum(packet);
+        device.write(packet, 64);
+        device.pause(1);
+    }
+}
+
+function getHighLow(value) {
+    return {
+        low: value & 0xFF,
+        high: (value >>> 8) & 0xFF
+    };
+}
+
+function calculateLegacyChecksum(data, index, bytesToSend) {
+    let packetSum = 0;
+    for (let i = 0; i < data.length; i++) {
+        packetSum += data[i];
+    }
+
+    const extra = index >= 5 ? ((index - 5) * bytesToSend) + 99 :
+        (index * bytesToSend) + 74;
+    return getHighLow(packetSum + extra);
+}
+
+function writeLegacyRGBPackages(RGBData) {
+    // Legacy K630-compatible packets carry 56 RGB bytes. The final packet is
+    // padded because the K552 buffer is 378 bytes (126 RGB slots).
+    const bytesToSend = 56;
+    const totalPackets = Math.ceil(RGBData.length / bytesToSend);
+
+    for (let index = 0; index < totalPackets; index++) {
+        const offset = index * bytesToSend;
+        const data = RGBData.slice(offset, offset + bytesToSend);
+        while (data.length < bytesToSend) {
+            data.push(0);
+        }
+
+        const bytesSent = getHighLow(offset);
+        const checksum = calculateLegacyChecksum(data, index, bytesToSend);
+        let packet = [0x04, checksum.low, checksum.high, 0x12,
+            bytesToSend, bytesSent.low, bytesSent.high, 0x00].concat(data);
+
+        while (packet.length < 64) {
+            packet.push(0);
+        }
+
         device.write(packet, 64);
         device.pause(1);
     }
