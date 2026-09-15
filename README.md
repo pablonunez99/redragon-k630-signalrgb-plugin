@@ -11,6 +11,7 @@ El plugin se comunica directamente con el controlador EVision del K552 RGB:
 - Render limitado a 20 FPS, con 1 ms entre paquetes
 - No reenvía frames idénticos, especialmente importante para colores sólidos
 - Incluye protocolo K552 V2 y protocolo legado compatible con el plugin K630
+- El protocolo legado envía bloques de 24 bytes RGB con 2 ms entre paquetes
 - El protocolo legado `0x12` recorre la matriz física por columnas (6 filas),
   por lo que usa un mapa separado del protocolo V2; incluye las posiciones ISO
   y las flechas

@@ -61,25 +61,6 @@ const vLeds = [
     105, 106, 107, 108, 109, 110, 111, 113, 119, 120, 121
 ];
 
-// The stable legacy 0x12 protocol scans the K552 as a 17-column × 6-row
-// matrix. It is column-major, unlike the row-major LED list used by the V2
-// protocol. The values below follow the physical ISO K552 matrix and leave
-// the ten unused slots at the end of the 112-slot legacy buffer untouched.
-const legacyVLeds = [
-    // Row 0: Esc, F1-F12, Print Screen, Scroll Lock, Pause.
-    0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 84, 90, 96,
-    // Row 1: `, 1-0, -, =, Backspace, Insert, Home, Page Up.
-    1, 7, 13, 19, 25, 31, 37, 43, 49, 55, 61, 67, 73, 79, 85, 91, 97,
-    // Row 2: Tab, Q-P, ´, +, Delete, End, Page Down.
-    2, 8, 14, 20, 26, 32, 38, 44, 50, 56, 62, 68, 74, 86, 92, 98,
-    // Row 3: Caps Lock, A-L, Ñ, {, }, Enter.
-    3, 9, 15, 21, 27, 33, 39, 45, 51, 57, 63, 69, 75, 81,
-    // Row 4: Left Shift, <, Z-M, comma, period, -, Right Shift, Up.
-    4, 10, 16, 22, 28, 34, 40, 46, 52, 58, 64, 70, 82, 94,
-    // Row 5: Ctrl, Win, Alt, Space, AltGr, Fn, Menu, Ctrl, Left, Down, Right.
-    5, 11, 17, 23, 29, 35, 41, 53, 89, 95, 101
-];
-
 // Physical ISO TKL layout. The gaps leave room for the function-key and
 // navigation-key spacing while keeping the SignalRGB canvas aligned.
 const vLedPositions = [
@@ -90,6 +71,13 @@ const vLedPositions = [
     [0, 4], [1, 4], [2, 4], [3, 4], [4, 4], [5, 4], [6, 4], [7, 4], [8, 4], [9, 4], [10, 4], [11, 4], [13, 4], [17, 4],
     [0, 5], [1, 5], [2, 5], [6, 5], [11, 5], [12, 5], [13, 5], [14, 5], [16, 5], [17, 5], [18, 5]
 ];
+
+// The stable legacy 0x12 protocol scans the K552 column-major with a six-row
+// stride. Unlike the V2 buffer, its address is based on the physical canvas
+// column, so gaps (for example the gap before F1) must be preserved.
+const legacyVLeds = vLedPositions.map(function (position) {
+    return (position[0] * 6) + position[1];
+});
 
 let lastSentFrame = null;
 let lastProtocolMode = null;
@@ -143,7 +131,7 @@ function hexToRgb(hex) {
 function sendColors(overrideColor) {
     const legacyProtocol = protocolMode === "K630 compatible (0x12)";
     const ledMap = legacyProtocol ? legacyVLeds : vLeds;
-    const slotCount = legacyProtocol ? 112 : 126;
+    const slotCount = 126;
     const RGBData = new Array(slotCount * 3).fill(0);
     const fixedColor = overrideColor ? hexToRgb(overrideColor) : null;
 
@@ -246,9 +234,11 @@ function calculateLegacyChecksum(data, index, bytesToSend) {
 }
 
 function writeLegacyRGBPackages(RGBData) {
-    // Legacy K630-compatible packets carry 56 RGB bytes. The K552 legacy
-    // buffer is 112 RGB slots; its last 24 slots are unused padding.
-    const bytesToSend = 56;
+    // Smaller legacy packets are required by this controller. With 56 RGB
+    // bytes it accepts partial frames and leaves old/fixed colors behind.
+    // The K552 buffer is 126 RGB slots, so 24-byte packets split it into
+    // sixteen packets without changing the address layout.
+    const bytesToSend = 24;
     const totalPackets = Math.ceil(RGBData.length / bytesToSend);
 
     for (let index = 0; index < totalPackets; index++) {
@@ -268,6 +258,6 @@ function writeLegacyRGBPackages(RGBData) {
         }
 
         device.write(packet, 64);
-        device.pause(1);
+        device.pause(2);
     }
 }
