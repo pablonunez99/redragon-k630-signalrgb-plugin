@@ -61,6 +61,13 @@ const vLeds = [
     105, 106, 107, 108, 109, 110, 111, 113, 119, 120, 121
 ];
 
+// The stable legacy 0x12 protocol uses the K552 V1 LED order instead of the
+// 126-slot EVision V2 matrix. The K552 RGB firmware exposes its 88 physical
+// LEDs row-by-row; unused matrix gaps are not part of this list.
+const legacyVLeds = Array.from({ length: 88 }, function (_, index) {
+    return index;
+});
+
 // Physical ISO TKL layout. The gaps leave room for the function-key and
 // navigation-key spacing while keeping the SignalRGB canvas aligned.
 const vLedPositions = [
@@ -122,9 +129,10 @@ function hexToRgb(hex) {
 }
 
 function sendColors(overrideColor) {
-    // 126 EVision LED slots × RGB. Only the six occupied keyboard rows are
-    // sent; unused matrix gaps are not transmitted.
-    const RGBData = new Array(126 * 3).fill(0);
+    const legacyProtocol = protocolMode === "K630 compatible (0x12)";
+    const ledMap = legacyProtocol ? legacyVLeds : vLeds;
+    const slotCount = legacyProtocol ? 112 : 126;
+    const RGBData = new Array(slotCount * 3).fill(0);
     const fixedColor = overrideColor ? hexToRgb(overrideColor) : null;
 
     if (lastProtocolMode !== protocolMode) {
@@ -133,13 +141,13 @@ function sendColors(overrideColor) {
         setSoftwareMode();
     }
 
-    for (let i = 0; i < vLeds.length; i++) {
+    for (let i = 0; i < ledMap.length; i++) {
         const x = vLedPositions[i][0];
         const y = vLedPositions[i][1];
         const color = fixedColor || device.color(x, y);
 
         if (color) {
-            const ledIndex = vLeds[i] * 3;
+            const ledIndex = ledMap[i] * 3;
             RGBData[ledIndex] = color[0];
             RGBData[ledIndex + 1] = color[1];
             RGBData[ledIndex + 2] = color[2];
@@ -226,8 +234,8 @@ function calculateLegacyChecksum(data, index, bytesToSend) {
 }
 
 function writeLegacyRGBPackages(RGBData) {
-    // Legacy K630-compatible packets carry 56 RGB bytes. The final packet is
-    // padded because the K552 buffer is 378 bytes (126 RGB slots).
+    // Legacy K630-compatible packets carry 56 RGB bytes. The K552 legacy
+    // buffer is 112 RGB slots; its last 24 slots are unused padding.
     const bytesToSend = 56;
     const totalPackets = Math.ceil(RGBData.length / bytesToSend);
 

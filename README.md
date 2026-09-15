@@ -11,6 +11,8 @@ El plugin se comunica directamente con el controlador EVision del K552 RGB:
 - Render limitado a 20 FPS, con 1 ms entre paquetes
 - No reenvía frames idénticos, especialmente importante para colores sólidos
 - Incluye protocolo K552 V2 y protocolo legado compatible con el plugin K630
+- El protocolo legado usa el orden real de los 88 LEDs de la matriz K552 V1,
+  incluyendo las posiciones ISO y las flechas
 
 Incluye un mapa ISO español TKL de 88 teclas, incluyendo `Ñ` y `<>`, y activa el modo personalizado para que SignalRGB pueda controlar el color de cada tecla.
 
