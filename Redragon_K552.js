@@ -13,6 +13,12 @@ export function Validate(endpoint) {
 }
 export function ImageUrl() { return ""; }
 
+// Temporary hardware diagnostic. Set to false after the real slot map is known.
+const DEBUG_MAPPING = true;
+const DEBUG_HOLD_FRAMES = 20; // 1 second per slot at 20 FPS.
+let debugSlot = 0;
+let debugFrames = 0;
+
 // Physical ISO TKL layout.
 const vLedNames = [
     "Esc", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "Print Screen", "Scroll Lock", "Pause",
@@ -51,11 +57,35 @@ export function Initialize() {
 }
 
 export function Render() {
+    if (DEBUG_MAPPING) {
+        renderDebugSlot();
+        return;
+    }
+
     sendColors();
 }
 
 export function Shutdown(SystemSuspending) {
     sendColors(true);
+}
+
+function renderDebugSlot() {
+    const RGBData = new Array(126 * 3).fill(0);
+    const ledIndex = debugSlot * 3;
+
+    // RGBData is GRB for this keyboard: this makes the selected slot red.
+    RGBData[ledIndex] = 0;
+    RGBData[ledIndex + 1] = 255;
+    RGBData[ledIndex + 2] = 0;
+
+    device.setName(Name() + " DEBUG slot " + debugSlot);
+    writeRGBPackages(RGBData);
+
+    debugFrames++;
+    if (debugFrames >= DEBUG_HOLD_FRAMES) {
+        debugFrames = 0;
+        debugSlot = (debugSlot + 1) % 126;
+    }
 }
 
 function sendColors(turnOff) {
