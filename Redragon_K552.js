@@ -63,6 +63,8 @@ const vLedPositions = [
     [0, 5], [1, 5], [2, 5], [6, 5], [11, 5], [12, 5], [13, 5], [14, 5], [16, 5], [17, 5], [18, 5]
 ];
 
+let lastSentFrame = null;
+
 export function Initialize() {
     device.setName(Name());
     device.setSize(Size());
@@ -120,6 +122,13 @@ function sendColors(overrideColor) {
         }
     }
 
+    // Do not queue the same full frame repeatedly. This is important on the
+    // K552 V2 because the MCU also has to service keyboard input.
+    if (lastSentFrame && RGBData.every((value, index) => value === lastSentFrame[index])) {
+        return;
+    }
+
+    lastSentFrame = RGBData;
     writeRGBPackages(RGBData);
 }
 
