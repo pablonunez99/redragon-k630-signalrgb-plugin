@@ -15,9 +15,37 @@ export function ImageUrl() { return ""; }
 
 // Temporary hardware diagnostic. Set to false after the real slot map is known.
 const DEBUG_MAPPING = true;
+const DEBUG_SLOT_COUNT = 126;
 const DEBUG_HOLD_FRAMES = 20; // 1 second per slot at 20 FPS.
-let debugSlot = 0;
+let currentDebugSlot = 0;
 let debugFrames = 0;
+let lastReportedDebugSlot = -1;
+
+export function ControllableParameters() {
+    return [
+        {
+            property: "DebugSlot",
+            label: "Diagnostic slot",
+            type: "number",
+            min: 0,
+            max: DEBUG_SLOT_COUNT - 1,
+            step: 1,
+            default: 0
+        },
+        {
+            property: "DebugAuto",
+            label: "Automatic slot scan",
+            type: "boolean",
+            default: true
+        },
+        {
+            property: "DebugColor",
+            label: "Diagnostic color",
+            type: "color",
+            default: "#FF0000"
+        }
+    ];
+}
 
 // Physical ISO TKL layout.
 const vLedNames = [
@@ -66,26 +94,57 @@ export function Render() {
 }
 
 export function Shutdown(SystemSuspending) {
+    if (DEBUG_MAPPING) {
+        writeRGBPackages(new Array(DEBUG_SLOT_COUNT * 3).fill(0));
+        return;
+    }
+
     sendColors(true);
 }
 
 function renderDebugSlot() {
-    const RGBData = new Array(126 * 3).fill(0);
-    const ledIndex = debugSlot * 3;
+    const RGBData = new Array(DEBUG_SLOT_COUNT * 3).fill(0);
+    const autoScan = typeof DebugAuto === "undefined" ? true : DebugAuto;
+    const selectedSlot = typeof DebugSlot === "undefined" ? currentDebugSlot : DebugSlot;
+
+    if (!autoScan) {
+        currentDebugSlot = Math.max(0, Math.min(DEBUG_SLOT_COUNT - 1, Number(selectedSlot)));
+    }
+
+    const ledIndex = currentDebugSlot * 3;
+    const color = parseColor(typeof DebugColor === "undefined" ? "#FF0000" : DebugColor);
 
     // RGBData is GRB for this keyboard: this makes the selected slot red.
-    RGBData[ledIndex] = 0;
-    RGBData[ledIndex + 1] = 255;
-    RGBData[ledIndex + 2] = 0;
+    RGBData[ledIndex] = color[1];
+    RGBData[ledIndex + 1] = color[0];
+    RGBData[ledIndex + 2] = color[2];
 
-    device.setName(Name() + " DEBUG slot " + debugSlot);
+    if (lastReportedDebugSlot !== currentDebugSlot) {
+        device.setName(Name() + " DEBUG slot " + currentDebugSlot);
+        lastReportedDebugSlot = currentDebugSlot;
+    }
     writeRGBPackages(RGBData);
 
-    debugFrames++;
-    if (debugFrames >= DEBUG_HOLD_FRAMES) {
-        debugFrames = 0;
-        debugSlot = (debugSlot + 1) % 126;
+    if (autoScan) {
+        debugFrames++;
+        if (debugFrames >= DEBUG_HOLD_FRAMES) {
+            debugFrames = 0;
+            currentDebugSlot = (currentDebugSlot + 1) % DEBUG_SLOT_COUNT;
+        }
     }
+}
+
+export function onDebugSlotChanged() {
+    currentDebugSlot = Math.max(0, Math.min(DEBUG_SLOT_COUNT - 1, Number(DebugSlot)));
+    debugFrames = 0;
+    lastReportedDebugSlot = -1;
+}
+
+function parseColor(value) {
+    const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(value);
+    return match
+        ? [parseInt(match[1], 16), parseInt(match[2], 16), parseInt(match[3], 16)]
+        : [255, 0, 0];
 }
 
 function sendColors(turnOff) {
