@@ -105,7 +105,8 @@ function hexToRgb(hex) {
 }
 
 function sendColors(overrideColor) {
-    // 126 EVision LED slots × RGB, sent as 7 packets of 0x36 bytes.
+    // 126 EVision LED slots × RGB. Only the six occupied keyboard rows are
+    // sent; unused matrix gaps are not transmitted.
     const RGBData = new Array(126 * 3).fill(0);
     const fixedColor = overrideColor ? hexToRgb(overrideColor) : null;
 
@@ -123,7 +124,7 @@ function sendColors(overrideColor) {
     }
 
     // Solid colors and unchanged effect frames do not need to be sent again.
-    // Repeating the seven HID packets makes the K552 visibly redraw partial
+    // Repeating the six HID packets makes the K552 visibly redraw partial
     // frames while the controller is receiving them.
     if (lastSentFrame) {
         let sameFrame = true;
@@ -152,14 +153,20 @@ function applyChecksum(packet) {
 }
 
 function writeRGBPackages(RGBData) {
-    // EVision's standard maximum is 0x36 RGB bytes per packet. The K552 V2
-    // exposes 126 slots, so this produces exactly seven complete packets.
-    const bytesToSend = 0x36;
-    const totalPackets = Math.ceil(RGBData.length / bytesToSend);
+    // Each range is one occupied keyboard row. The largest range is 17 RGB
+    // slots (51 bytes), so every range fits in one EVision HID packet.
+    const ranges = [
+        [0, 17 * 3],
+        [21 * 3, 17 * 3],
+        [42 * 3, 17 * 3],
+        [63 * 3, 14 * 3],
+        [84 * 3, 16 * 3],
+        [105 * 3, 17 * 3]
+    ];
 
-    for (let index = 0; index < totalPackets; index++) {
-        const data = RGBData.slice(index * bytesToSend, (index + 1) * bytesToSend);
-        const offset = index * bytesToSend;
+    for (let index = 0; index < ranges.length; index++) {
+        const offset = ranges[index][0];
+        const data = RGBData.slice(offset, offset + ranges[index][1]);
         let packet = [0x04, 0x00, 0x00, 0x11, data.length, offset & 0xFF, offset >>> 8, 0x00].concat(data);
 
         while (packet.length < 64) {

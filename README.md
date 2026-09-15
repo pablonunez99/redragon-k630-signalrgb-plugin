@@ -7,7 +7,7 @@ El plugin se comunica directamente con el controlador EVision del K552 RGB:
 - VID: `0x320F`
 - PID: `0x5000`
 - HID usage page: `0xFF1C`
-- Buffer RGB: 126 posiciones, enviado en 7 bloques estándar de 54 bytes
+- Buffer RGB: 126 posiciones, enviado en 6 rangos ocupados por fila
 - Render limitado a 20 FPS, con 1 ms entre paquetes
 - No reenvía frames idénticos, especialmente importante para colores sólidos
 
