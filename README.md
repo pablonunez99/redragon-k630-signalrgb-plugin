@@ -19,8 +19,6 @@ Incluye un mapa ANSI TKL de 87 teclas y activa el modo personalizado para que Si
 3. Vuelve a abrir SignalRGB y entra en Devices.
 4. Busca **Redragon K552 RGB Custom**.
 
-El archivo `Redragon_K630.js` se conserva para el modelo K630 original.
-
 ## Notas
 
 Este plugin está preparado para el K552 RGB basado en EVision. Las variantes K552 de iluminación roja fija, rainbow no direccionable o las revisiones inalámbricas usan otro hardware y no son compatibles con este perfil.

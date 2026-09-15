@@ -53,7 +53,7 @@ export function Render() {
 }
 
 export function Shutdown(SystemSuspending) {
-    sendColors("#000000"); 
+    sendColors("#000000");
 }
 
 function setSoftwareMode() {
@@ -70,21 +70,14 @@ function hexToRgb(hex) {
 }
 
 function sendColors(overrideColor) {
-    // K630 max LED is 108. 108*3 = 324. We use 336 so it is perfectly divisible by 56 bytes per packet (6 packets).
-    const RGBData = new Array(336).fill(0); 
+    const RGBData = new Array(336).fill(0);
 
     for (let i = 0; i < vLeds.length; i++) {
         const x = vLedPositions[i][0];
         const y = vLedPositions[i][1];
-        let color;
+        const color = overrideColor ? hexToRgb(overrideColor) : device.color(x, y);
 
-        if (overrideColor) {
-            color = hexToRgb(overrideColor);
-        } else {
-            color = device.color(x, y);
-        }
-
-        if(color){
+        if (color) {
             const ledIndex = vLeds[i] * 3;
             RGBData[ledIndex] = color[0];
             RGBData[ledIndex + 1] = color[1];
@@ -120,7 +113,6 @@ function writeRGBPackage(RGBData) {
 
     for (let index = 0; index < totalPackets; index++) {
         const data = RGBData.slice(index * bytesToSend, (index + 1) * bytesToSend);
-        
         const bytesSent = getHighLow(index * bytesToSend);
         const checksum = calculateChecksum(data, index, bytesToSend);
 

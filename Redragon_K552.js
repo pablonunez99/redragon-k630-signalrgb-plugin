@@ -5,7 +5,7 @@ export function Publisher() { return "Mostakim"; }
 export function Size() { return [20, 6]; }
 export function DeviceType() { return "keyboard"; }
 export function Validate(endpoint) {
-    return endpoint.interface === 1 && endpoint.usage === 0xFF1C;
+    return endpoint.interface === 1 && endpoint.usage_page === 0xFF1C;
 }
 export function ImageUrl() { return ""; }
 
