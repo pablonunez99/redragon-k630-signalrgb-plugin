@@ -62,8 +62,9 @@ function sendColors(turnOff) {
 
         if (color) {
             const ledIndex = vLeds[i] * 3;
-            RGBData[ledIndex] = color[0];
-            RGBData[ledIndex + 1] = color[1];
+            // The controller expects GRB, while SignalRGB provides RGB.
+            RGBData[ledIndex] = color[1];
+            RGBData[ledIndex + 1] = color[0];
             RGBData[ledIndex + 2] = color[2];
         }
     }
