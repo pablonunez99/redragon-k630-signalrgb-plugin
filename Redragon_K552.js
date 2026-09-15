@@ -32,10 +32,16 @@ const vLedPositions = [
     [0, 5], [1, 5], [2, 5], [6, 5], [11, 5], [12, 5], [13, 5], [14, 5], [16, 5], [17, 5], [18, 5]
 ];
 
-// The controller addresses LEDs by column, with six rows per column.
-const vLeds = vLedPositions.map(function (position) {
-    return (position[0] * 6) + position[1];
-});
+// Explicit EVision 0x12 map. The values are physical RGB slots, not canvas
+// coordinates; using x * 6 + y produces the wrong key on this controller.
+const vLeds = [
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16,
+    21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 35, 36, 37,
+    42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58,
+    63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76,
+    84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 97, 99,
+    105, 106, 107, 108, 109, 110, 111, 113, 119, 120, 121
+];
 
 export function Initialize() {
     device.setName(Name());
