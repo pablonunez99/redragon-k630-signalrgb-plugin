@@ -4,6 +4,7 @@ export function ProductId() { return 0x5000; }
 export function Publisher() { return "Mostakim"; }
 export function Size() { return [20, 6]; }
 export function DeviceType() { return "keyboard"; }
+export function FPS() { return 30; }
 export function Validate(endpoint) {
     return endpoint.interface === 1 &&
         endpoint.usage === 0x0092 &&
@@ -89,6 +90,7 @@ function sendMode(modeData) {
     }
     applyChecksum(packet);
     device.write(packet, 64);
+    device.pause(5);
 }
 
 function hexToRgb(hex) {
@@ -131,13 +133,15 @@ function applyChecksum(packet) {
 }
 
 function writeRGBPackages(RGBData) {
-    const bytesToSend = 0x36;
-    const totalPackets = RGBData.length / bytesToSend;
+    // Smaller chunks keep the K552 V2 controller from overrunning while it
+    // also services keyboard input. The final packet may be shorter.
+    const bytesToSend = 24;
+    const totalPackets = Math.ceil(RGBData.length / bytesToSend);
 
     for (let index = 0; index < totalPackets; index++) {
         const data = RGBData.slice(index * bytesToSend, (index + 1) * bytesToSend);
         const offset = index * bytesToSend;
-        let packet = [0x04, 0x00, 0x00, 0x11, bytesToSend, offset & 0xFF, offset >>> 8, 0x00].concat(data);
+        let packet = [0x04, 0x00, 0x00, 0x11, data.length, offset & 0xFF, offset >>> 8, 0x00].concat(data);
 
         while (packet.length < 64) {
             packet.push(0);
@@ -145,6 +149,6 @@ function writeRGBPackages(RGBData) {
 
         applyChecksum(packet);
         device.write(packet, 64);
-        device.pause(1);
+        device.pause(2);
     }
 }
