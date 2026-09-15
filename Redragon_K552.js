@@ -61,12 +61,24 @@ const vLeds = [
     105, 106, 107, 108, 109, 110, 111, 113, 119, 120, 121
 ];
 
-// The stable legacy 0x12 protocol uses the K552 V1 LED order instead of the
-// 126-slot EVision V2 matrix. The K552 RGB firmware exposes its 88 physical
-// LEDs row-by-row; unused matrix gaps are not part of this list.
-const legacyVLeds = Array.from({ length: 88 }, function (_, index) {
-    return index;
-});
+// The stable legacy 0x12 protocol scans the K552 as a 17-column × 6-row
+// matrix. It is column-major, unlike the row-major LED list used by the V2
+// protocol. The values below follow the physical ISO K552 matrix and leave
+// the ten unused slots at the end of the 112-slot legacy buffer untouched.
+const legacyVLeds = [
+    // Row 0: Esc, F1-F12, Print Screen, Scroll Lock, Pause.
+    0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 84, 90, 96,
+    // Row 1: `, 1-0, -, =, Backspace, Insert, Home, Page Up.
+    1, 7, 13, 19, 25, 31, 37, 43, 49, 55, 61, 67, 73, 79, 85, 91, 97,
+    // Row 2: Tab, Q-P, ´, +, Delete, End, Page Down.
+    2, 8, 14, 20, 26, 32, 38, 44, 50, 56, 62, 68, 74, 86, 92, 98,
+    // Row 3: Caps Lock, A-L, Ñ, {, }, Enter.
+    3, 9, 15, 21, 27, 33, 39, 45, 51, 57, 63, 69, 75, 81,
+    // Row 4: Left Shift, <, Z-M, comma, period, -, Right Shift, Up.
+    4, 10, 16, 22, 28, 34, 40, 46, 52, 58, 64, 70, 82, 94,
+    // Row 5: Ctrl, Win, Alt, Space, AltGr, Fn, Menu, Ctrl, Left, Down, Right.
+    5, 11, 17, 23, 29, 35, 41, 53, 89, 95, 101
+];
 
 // Physical ISO TKL layout. The gaps leave room for the function-key and
 // navigation-key spacing while keeping the SignalRGB canvas aligned.
