@@ -1,32 +1,31 @@
-<div align="center">
-  <img src="SignalRGB_logo.png" alt="SignalRGB Logo" height="320" />
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="K630_image.png" alt="Redragon K630" height="320" />
-</div>
+# Redragon K552 RGB SignalRGB Plugin
 
-<br>
+Plugin independiente para [SignalRGB](https://signalrgb.com/) del **Redragon K552 Kumara RGB** de 87 teclas (formato TKL).
 
-# Redragon K630 SignalRGB Plugin
+El plugin se comunica directamente con el controlador EVision del K552 RGB:
 
-A custom, standalone [SignalRGB](https://signalrgb.com/) plugin for the **Redragon K630 (Dragonborn)** 60% keyboard. 
+- VID: `0x0C45`
+- PID: `0x5104`
+- HID usage page: `0xFF1C`
+- Buffer RGB: 126 posiciones, enviado en 7 paquetes de 54 bytes
 
-This plugin directly interfaces with the keyboard's EVision microcontroller (VID: 0x320F, PID: 0x5000), providing a fully mapped 61-key ANSI Matrix. It fixes the lighting misalignment and unlit keys (such as `[`, `]`, `\`, and `;`) that occur when trying to use the default Redragon Kala V2 profile.
+Incluye un mapa ANSI TKL de 87 teclas y activa el modo personalizado para que SignalRGB pueda controlar el color de cada tecla.
 
-## Features
-- **Perfect 61-Key Mapping**: All keys on the K630 60% layout are accurately mapped to the SignalRGB canvas.
-- **Standalone Module**: Does not modify or inject code into default SignalRGB EVision scripts.
-- **Direct EVision Communication**: Correctly utilizes the checksum calculation and packet splitting required by the K630's MCU.
+## Instalación
 
-## Installation
-
-1. Download the `Redragon_K630.js` file from this repository.
-2. Open Windows Explorer and navigate to your SignalRGB Plugins folder:
+1. Copia `Redragon_K552.js` en:
    `%USERPROFILE%\Documents\WhirlwindFX\Plugins`
-3. Place `Redragon_K630.js` into this folder.
-4. Restart SignalRGB completely (ensure it is closed from the system tray).
-5. Open SignalRGB, navigate to your Devices, and look for your keyword. 
-6. (Optional) If it prompts for a Forced Model, make sure to select the **Redragon K630 Custom** profile.
+2. Cierra SignalRGB completamente, también desde la bandeja del sistema.
+3. Vuelve a abrir SignalRGB y entra en Devices.
+4. Busca **Redragon K552 RGB Custom**.
 
-## Credit
-* Configured specifically for the Redragon K630 ANSI standard matrix layout.
-* Uses standard EVision Protocol structures based on default SignalRGB infrastructure.
+El archivo `Redragon_K630.js` se conserva para el modelo K630 original.
+
+## Notas
+
+Este plugin está preparado para el K552 RGB basado en EVision. Las variantes K552 de iluminación roja fija, rainbow no direccionable o las revisiones inalámbricas usan otro hardware y no son compatibles con este perfil.
+
+## Créditos
+
+- Mapa físico ANSI TKL de 87 teclas.
+- Protocolo de color EVision estándar para el K552 (`0x0C45:0x5104`).
