@@ -63,6 +63,8 @@ const vLedPositions = [
     [0, 5], [1, 5], [2, 5], [6, 5], [11, 5], [12, 5], [13, 5], [14, 5], [16, 5], [17, 5], [18, 5]
 ];
 
+let lastSentFrame = null;
+
 export function Initialize() {
     device.setName(Name());
     device.setSize(Size());
@@ -120,6 +122,23 @@ function sendColors(overrideColor) {
         }
     }
 
+    // Solid colors and unchanged effect frames do not need to be sent again.
+    // Repeating the seven HID packets makes the K552 visibly redraw partial
+    // frames while the controller is receiving them.
+    if (lastSentFrame) {
+        let sameFrame = true;
+        for (let i = 0; i < RGBData.length; i++) {
+            if (RGBData[i] !== lastSentFrame[i]) {
+                sameFrame = false;
+                break;
+            }
+        }
+        if (sameFrame) {
+            return;
+        }
+    }
+
+    lastSentFrame = RGBData;
     writeRGBPackages(RGBData);
 }
 
@@ -149,6 +168,6 @@ function writeRGBPackages(RGBData) {
 
         applyChecksum(packet);
         device.write(packet, 64);
-        device.pause(4);
+        device.pause(1);
     }
 }

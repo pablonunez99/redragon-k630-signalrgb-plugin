@@ -8,7 +8,8 @@ El plugin se comunica directamente con el controlador EVision del K552 RGB:
 - PID: `0x5000`
 - HID usage page: `0xFF1C`
 - Buffer RGB: 126 posiciones, enviado en 7 bloques estándar de 54 bytes
-- Render limitado a 20 FPS, con 4 ms entre paquetes
+- Render limitado a 20 FPS, con 1 ms entre paquetes
+- No reenvía frames idénticos, especialmente importante para colores sólidos
 
 Incluye un mapa ISO español TKL de 88 teclas, incluyendo `Ñ` y `<>`, y activa el modo personalizado para que SignalRGB pueda controlar el color de cada tecla.
 
