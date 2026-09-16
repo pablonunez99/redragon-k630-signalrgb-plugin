@@ -172,7 +172,20 @@ const vLedNames = [
     "Shift izq.", "<", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "-", "Shift der.", "Up Arrow",
     "Ctrl izq.", "Win", "Alt izq.", "Space", "Alt der.", "Fn", "Menu", "Ctrl der.", "Left Arrow", "Down Arrow", "Right Arrow"
 ];
-const vLeds = vLedNames.map(name => vLedMap[name]);
+
+// These three labels were previously affected by the file's legacy encoding.
+// Keep the labels readable and resolve their existing map keys explicitly.
+vLedNames[43] = "\u00B4";       // ´
+vLedNames[48] = "Bloq Mayus";
+vLedNames[58] = "\u00D1";       // Ñ
+const legacyVLedNames = {
+    43: "\u00C2\u00B4",
+    48: "Bloq May\u00C3\u00BAs",
+    58: "\u00C3\u2018"
+};
+const vLeds = vLedNames.map((name, index) =>
+    vLedMap[name] !== undefined ? vLedMap[name] : vLedMap[legacyVLedNames[index]]
+);
 
 export function Initialize() {
     device.setName(Name());
