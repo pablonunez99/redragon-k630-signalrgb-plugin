@@ -13,8 +13,8 @@ export function Validate(endpoint) {
 }
 export function ImageUrl() { return ""; }
 
-// Temporary hardware diagnostic. Set to false after the real slot map is known.
-const DEBUG_MAPPING = true;
+// Set true only when inspecting raw hardware slots.
+const DEBUG_MAPPING = false;
 const DEBUG_SLOT_COUNT = 126;
 const DEBUG_HOLD_FRAMES = 20; // 1 second per slot at 20 FPS.
 let currentDebugSlot = 0;
@@ -47,15 +47,7 @@ export function ControllableParameters() {
     ];
 }
 
-// Physical ISO TKL layout.
-const vLedNames = [
-    "Esc", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "Print Screen", "Scroll Lock", "Pause",
-    "`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "Backspace", "Insert", "Home", "Page Up",
-    "Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "´", "+", "Delete", "End", "Page Down",
-    "Caps Lock", "A", "S", "D", "F", "G", "H", "J", "K", "L", "Ñ", "{", "}", "Enter",
-    "Left Shift", "<", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "-", "Right Shift", "Up",
-    "Left Ctrl", "Left Win", "Left Alt", "Space", "Right Alt", "Fn", "Menu", "Right Ctrl", "Left", "Down", "Right"
-];
+
 
 const vLedPositions = [
     [0, 0], [2, 0], [3, 0], [4, 0], [5, 0], [7, 0], [8, 0], [9, 0], [10, 0], [12, 0], [13, 0], [14, 0], [15, 0], [17, 0], [18, 0], [19, 0],
@@ -66,16 +58,112 @@ const vLedPositions = [
     [0, 5], [1, 5], [2, 5], [6, 5], [11, 5], [12, 5], [13, 5], [14, 5], [16, 5], [17, 5], [18, 5]
 ];
 
-// Explicit K552RGB-1 map. The controller stores RGB slots column-major with
-// six rows; the canvas positions are visual and must not be used as columns.
-const vLeds = [
-    0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90,
-    1, 7, 13, 19, 25, 31, 37, 43, 49, 55, 61, 67, 73, 79, 85, 91, 97,
-    2, 8, 14, 20, 26, 32, 38, 44, 50, 56, 62, 68, 74, 80, 86, 92,
-    3, 9, 15, 21, 27, 33, 39, 45, 51, 57, 63, 69, 75, 81,
-    4, 10, 16, 22, 28, 34, 40, 46, 52, 58, 64, 70, 76, 82,
-    5, 11, 17, 23, 29, 35, 41, 47, 53, 59, 65
+
+const vLedMap = {
+    "Esc": 0, 
+    "F1": 8, 
+    "F2": 16, 
+    "F3": 24, 
+    "F4": 32, 
+    "F5": 40, 
+    "F6": 48, 
+    "F7": 56, 
+    "F8": 64, 
+    "F9": 72, 
+    "F10": 80, 
+    "F11": 88, 
+    "F12": 96,
+    "ImpPnt": 104,
+    "ScrLck": 112,
+    "Pause": 120,
+    "|": 1,
+    "1": 9,
+    "2": 17,
+    "3": 25,
+    "4": 33,
+    "5": 41,
+    "6": 49,
+    "7": 57,
+    "8": 65,
+    "9": 73,
+    "0": 81,
+    "'": 89,
+    "¿": 97,
+    "Backspace": 105,
+    "Insert": 113,
+    "Inicio": 121,
+    "RePag": 115,
+    "Tab": 2,
+    "Q": 10,
+    "W": 18,
+    "E": 26,
+    "R": 34,
+    "T": 42,
+    "Y": 50,
+    "U": 58,
+    "I": 66,
+    "O": 74,
+    "P": 82,
+    "´": 90,
+    "+": 98,
+    "Delete": 114,
+    "End": 122,
+    "Page Down": 123,
+    "Bloq Mayús": 3,
+    "A": 11,
+    "S": 19,
+    "D": 27,
+    "F": 35,
+    "G": 43,
+    "H": 51,
+    "J": 59,
+    "K": 67,
+    "L": 75,
+    "Ñ": 83,
+    "{": 91,
+    "}": 99,
+    "Enter": 107,
+    "Shift izq.": 4,
+    "<": 12,
+    "Z": 20,
+    "X": 28,
+    "C": 36,
+    "V": 44,
+    "B": 52,
+    "N": 60,
+    "M": 68,
+    ",": 76,
+    ".": 84,
+    "-": 92,
+    "Shift der.": 108,
+    "Up Arrow": 116,
+    "Ctrl izq.": 5,
+    "Win": 13,
+    "Alt izq.": 21,
+    "Space": 45,
+    "Alt der.": 77,
+    "Fn": 85,
+    "Menu": 93,
+    "Ctrl der.": 101,
+    "Left Arrow": 109,
+    "Down Arrow": 117,
+    "Right Arrow": 125,
+}
+
+/*
+const unusedVLedNames = [
+    "Esc", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "ImpPnt", "ScrLck", "Pause",
+    "|", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "'", "Â¿", "Backspace", "Insert", "Inicio", "RePag",
+    "Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "Â´", "+", "Delete", "End", "Page Down",
+    "Bloq MayÃºs", "A", "S", "D", "F", "G", "H", "J", "K", "L", "Ã‘", "{", "}", "Enter",
+    "Shift izq.", "<", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "-", "Shift der.", "Up Arrow",
+    "Ctrl izq.", "Win", "Alt izq.", "Space", "Alt der.", "Fn", "Menu", "Ctrl der.", "Left Arrow", "Down Arrow", "Right Arrow"
 ];
+*/
+
+// The map is the single source of truth for names and physical slots.
+const vLedNames = Object.keys(vLedMap);
+const vLeds = vLedNames.map(name => vLedMap[name]);
 
 export function Initialize() {
     device.setName(Name());
@@ -114,7 +202,7 @@ function renderDebugSlot() {
     const ledIndex = currentDebugSlot * 3;
     const color = parseColor(typeof DebugColor === "undefined" ? "#FF0000" : DebugColor);
 
-    // RGBData is GRB for this keyboard: this makes the selected slot red.
+    // RGBData is GRB for this keyboard.
     RGBData[ledIndex] = color[1];
     RGBData[ledIndex + 1] = color[0];
     RGBData[ledIndex + 2] = color[2];
