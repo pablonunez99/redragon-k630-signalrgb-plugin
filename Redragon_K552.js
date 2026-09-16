@@ -59,7 +59,7 @@ const vLedPositions = [
 ];
 
 
-const vLedMap = {
+const legacyVLedMap = {
     "Esc": 0, 
     "F1": 8, 
     "F2": 16, 
@@ -164,7 +164,7 @@ const unusedVLedNames = [
 // The map is the single source of truth for names and physical slots.
 // Keep this order explicit. Object.keys() moves integer-like names such as
 // "1", "2", etc. before the other keys, which breaks the layout/name pairing.
-const vLedNames = [
+const legacyVLedNamesSource = [
     "Esc", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "ImpPnt", "ScrLck", "Pause",
     "|", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "'", "¿", "Backspace", "Insert", "Inicio", "RePag",
     "Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "¨", "+", "Delete", "End", "Page Down",
@@ -173,6 +173,27 @@ const vLedNames = [
     "Ctrl izq.", "Win", "Alt izq.", "Space", "Alt der.", "Fn", "Menu", "Ctrl der.", "Left Arrow", "Down Arrow", "Right Arrow"
 ];
 
+// Display names are independent from the hardware slots and use stable Unicode.
+const vLedNames = [
+    "Esc", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "ImpPnt", "ScrLck", "Pause",
+    "|", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "'", "\u00BF", "Backspace", "Insert", "Inicio", "RePag",
+    "Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "\u00B4", "+", "Delete", "End", "Page Down",
+    "Bloq Mayus", "A", "S", "D", "F", "G", "H", "J", "K", "L", "\u00D1", "{", "}", "Enter",
+    "Shift izq.", "<", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "-", "Shift der.", "Up Arrow",
+    "Ctrl izq.", "Win", "Alt izq.", "Space", "Alt der.", "Fn", "Menu", "Ctrl der.", "Left Arrow", "Down Arrow", "Right Arrow"
+];
+
+// Hardware slots, in exactly the same order as vLedPositions.
+const vLedSlots = [
+    0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120,
+    1, 9, 17, 25, 33, 41, 49, 57, 65, 73, 81, 89, 97, 105, 113, 121, 115,
+    2, 10, 18, 26, 34, 42, 50, 58, 66, 74, 82, 90, 98, 114, 122, 123,
+    3, 11, 19, 27, 35, 43, 51, 59, 67, 75, 83, 91, 99, 107,
+    4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 108, 116,
+    5, 13, 21, 45, 77, 85, 93, 101, 109, 117, 125
+];
+
+if (false) {
 // These three labels were previously affected by the file's legacy encoding.
 // Keep the labels readable and resolve their existing map keys explicitly.
 vLedNames[43] = "\u00B4";       // ´
@@ -183,9 +204,8 @@ const legacyVLedNames = {
     48: "Bloq May\u00C3\u00BAs",
     58: "\u00C3\u2018"
 };
-const vLeds = vLedNames.map((name, index) =>
-    vLedMap[name] !== undefined ? vLedMap[name] : vLedMap[legacyVLedNames[index]]
-);
+}
+const vLeds = vLedSlots;
 
 export function Initialize() {
     device.setName(Name());
