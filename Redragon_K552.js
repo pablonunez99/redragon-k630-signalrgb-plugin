@@ -162,7 +162,16 @@ const unusedVLedNames = [
 */
 
 // The map is the single source of truth for names and physical slots.
-const vLedNames = Object.keys(vLedMap);
+// Keep this order explicit. Object.keys() moves integer-like names such as
+// "1", "2", etc. before the other keys, which breaks the layout/name pairing.
+const vLedNames = [
+    "Esc", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "ImpPnt", "ScrLck", "Pause",
+    "|", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "'", "\u00C2\u00BF", "Backspace", "Insert", "Inicio", "RePag",
+    "Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "\u00C2\u00B4", "+", "Delete", "End", "Page Down",
+    "Bloq May\u00C3\u00BAs", "A", "S", "D", "F", "G", "H", "J", "K", "L", "\u00C3\u2018", "{", "}", "Enter",
+    "Shift izq.", "<", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "-", "Shift der.", "Up Arrow",
+    "Ctrl izq.", "Win", "Alt izq.", "Space", "Alt der.", "Fn", "Menu", "Ctrl der.", "Left Arrow", "Down Arrow", "Right Arrow"
+];
 const vLeds = vLedNames.map(name => vLedMap[name]);
 
 export function Initialize() {
